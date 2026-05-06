@@ -53,7 +53,7 @@ sudo ./find_all_keys_macos
 ### 第四步：安装 Python 依赖 & 解密
 
 ```bash
-pip3 install pycryptodome
+pip3 install pycryptodome zstandard
 
 # 首次运行会自动检测微信数据目录并生成 config.json
 python3 decrypt_db.py
@@ -130,8 +130,8 @@ decrypted/
 **Q: 微信更新后还能用吗？**
 微信更新会恢复原始签名，重新执行第一步（重签）即可。
 
-**Q: 导出的消息中为什么有 `[压缩内容]`？**
-微信 WCDB 对部分消息内容使用了 zstd 压缩（`WCDB_CT_message_content=4`），需要额外解压。大部分文本消息不受影响。
+**Q: 导出的消息中为什么有 `[压缩内容: 请先安装 zstandard]`？**
+微信 WCDB 对部分消息内容使用了 zstd 压缩（`WCDB_CT_message_content=4`）。请执行 `pip3 install zstandard` 后重新导出。
 
 **Q: 图片/视频/语音怎么导出？**
 本工具目前导出文本记录。图片等媒体文件存储在微信的文件目录中（`xwechat_files/.../Message/`），需要通过 `message_resource.db` 关联路径提取，后续版本可能支持。
