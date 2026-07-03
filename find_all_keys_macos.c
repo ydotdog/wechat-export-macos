@@ -148,9 +148,15 @@ int main(int argc, char *argv[]) {
      * so we use nftw() to walk the directory tree instead. */
     printf("\nScanning for DB files...\n");
     char db_base_dir[512];
-    snprintf(db_base_dir, sizeof(db_base_dir),
-        "%s/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files",
-        home);
+    const char *db_base_override = getenv("WECHAT_DB_BASE");
+    if (db_base_override && db_base_override[0] != '\0') {
+        snprintf(db_base_dir, sizeof(db_base_dir), "%s", db_base_override);
+    } else {
+        snprintf(db_base_dir, sizeof(db_base_dir),
+            "%s/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files",
+            home);
+    }
+    printf("DB base: %s\n", db_base_dir);
 
     /* Walk each account's db_storage directory */
     DIR *xdir = opendir(db_base_dir);
