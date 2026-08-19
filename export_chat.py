@@ -68,24 +68,25 @@ def find_contact(query):
 
 
 def detect_my_wxid():
-    """Auto-detect current user's wxid from session database."""
+    """Auto-detect current user's wxid from config or local databases."""
+    db_dir = _cfg.get("db_dir", "")
+    account_dir = os.path.basename(os.path.dirname(db_dir)) if db_dir else ""
+    if account_dir.startswith("wxid_"):
+        # macOS account directories are usually named like wxid_xxx_suffix.
+        parts = account_dir.split("_")
+        if len(parts) >= 2:
+            return "_".join(parts[:2])
+
     session_db = os.path.join(DECRYPTED_DIR, "session", "session.db")
     if not os.path.exists(session_db):
         return None
     try:
-        conn = sqlite3.connect(session_db)
-        # The Name2Id table usually has the user's own wxid
-        rows = conn.execute("SELECT user_name FROM Name2Id WHERE user_name LIKE 'wxid_%' LIMIT 10").fetchall()
-        conn.close()
-        # The wxid that appears most frequently as sender across DBs is likely ours
-        # For now, check contact DB for a self-entry
-        contact_conn = sqlite3.connect(CONTACT_DB)
-        self_entry = contact_conn.execute(
-            "SELECT username FROM contact WHERE username LIKE 'wxid_%' AND local_type = 0 LIMIT 1"
-        ).fetchone()
-        contact_conn.close()
-        if self_entry:
-            return self_entry[0]
+        with sqlite3.connect(session_db) as conn:
+            row = conn.execute(
+                "SELECT user_name FROM Name2Id WHERE user_name LIKE 'wxid_%' LIMIT 1"
+            ).fetchone()
+            if row:
+                return row[0]
     except Exception:
         pass
     return None
