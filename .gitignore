@@ -1,8 +1,11 @@
 config.json
 all_keys.json
+keys_*.json
 decrypted/
 exported/
+export_all/
 *.pyc
 __pycache__/
 find_all_keys_macos
 .DS_Store
+.reasonix/
