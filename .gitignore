@@ -4,6 +4,7 @@ keys_*.json
 decrypted/
 exported/
 export_all/
+export_members/
 *.pyc
 __pycache__/
 find_all_keys_macos

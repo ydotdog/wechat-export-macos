@@ -119,6 +119,7 @@ Mac 微信默认只保留在 Mac 上收发的消息。如果需要手机上的�
 | `find_keys_lldb.py` | lldb 密钥提取脚本：断点 CommonCrypto `CCCrypt` 抓取密钥（4.1.x） |
 | `decrypt_db.py` | 数据库解密器，逐页解密 SQLCipher 4 加密的数据库 |
 | `export_chat.py` | 聊天记录导出工具，支持按联系人导出为 TXT/CSV/JSON |
+| `export_chat_members.py` | 群聊成员导出工具，导出每个群的成员昵称/备注/username |
 | `config.py` | 配置加载器，自动检测微信数据目录 |
 | `key_utils.py` | 密钥工具函数 |
 | `docs/wechat-4.1-key-extraction.md` | 微信 4.1.x 密钥提取方法学 |
