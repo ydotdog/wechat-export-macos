@@ -4,6 +4,12 @@ macOS 微信聊天记录一键解密导出工具。从运行中的微信进程�
 
 支持 **WeChat 4.x**（新版微信），适用于 **macOS (Apple Silicon & Intel)**。
 
+> **微信 4.1.x 注意**：4.1 起微信不再以 `x'<96hex>'` 字符串形式在内存中缓存
+> 数据库密钥，`find_all_keys_macos` 内存扫描将找不到任何密钥（实测 4.1.13）。
+> 请改用 **lldb 断点 CommonCrypto `CCCrypt`** 的方案提取密钥（见
+> [docs/wechat-4.1-key-extraction.md](docs/wechat-4.1-key-extraction.md) 和
+> `find_keys_lldb.py`）。微信 4.1.x 的每个数据库使用独立密钥，需逐一收集。
+
 ## 原理
 
 ```
@@ -50,6 +56,20 @@ sudo ./find_all_keys_macos
 
 输出 `all_keys.json`，包含所有数据库的解密密钥。
 
+> **微信 4.1.x**：`find_all_keys_macos` 无法找到密钥（4.1 改变了内存存储方式），
+> 请改用 lldb 方案。微信已重签的前提下执行：
+>
+> ```bash
+> sudo lldb -p $(pgrep -x WeChat) \
+>     -o "command script import $(pwd)/find_keys_lldb.py" \
+>     -o "process continue"
+> ```
+>
+> 挂载期间在微信中滚动聊天记录/打开会话/搜索以触发各库解密（4.1.x 每个
+> 数据库独立密钥，需逐一收集）。每匹配一个库打印 `KEY FOUND (n/24)` 并实时
+> 保存到 `all_keys.json`。收集完成后在 lldb 中执行 `detach` 再 `quit`。
+> 详见 [docs/wechat-4.1-key-extraction.md](docs/wechat-4.1-key-extraction.md)。
+
 ### 第四步：安装 Python 依赖 & 解密
 
 ```bash
@@ -95,11 +115,14 @@ Mac 微信默认只保留在 Mac 上收发的消息。如果需要手机上的�
 
 | 文件 | 说明 |
 |------|------|
-| `find_all_keys_macos.c` | C 语言密钥扫描器，通过 Mach VM API 读取微信进程内存 |
+| `find_all_keys_macos.c` | C 语言密钥扫描器，通过 Mach VM API 读取微信进程内存（4.0） |
+| `find_keys_lldb.py` | lldb 密钥提取脚本：断点 CommonCrypto `CCCrypt` 抓取密钥（4.1.x） |
 | `decrypt_db.py` | 数据库解密器，逐页解密 SQLCipher 4 加密的数据库 |
 | `export_chat.py` | 聊天记录导出工具，支持按联系人导出为 TXT/CSV/JSON |
+| `export_chat_members.py` | 群聊成员导出工具，导出每个群的成员昵称/备注/username |
 | `config.py` | 配置加载器，自动检测微信数据目录 |
 | `key_utils.py` | 密钥工具函数 |
+| `docs/wechat-4.1-key-extraction.md` | 微信 4.1.x 密钥提取方法学 |
 
 ## 数据库结构
 
